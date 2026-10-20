@@ -1,0 +1,119 @@
+<div class="min-h-screen bg-slate-50">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200">
+    <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">📚</span>
+        <h1 class="font-bold text-slate-800">Aula en Tiempo Real</h1>
+      </div>
+      @if (socket.connected()) {
+        <span class="flex items-center gap-1.5 text-xs text-green-600">
+          <span class="w-2 h-2 rounded-full bg-green-500"></span>
+          Conectado
+        </span>
+      } @else {
+        <span class="flex items-center gap-1.5 text-xs text-slate-400">
+          <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+          Desconectado
+        </span>
+      }
+    </div>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-8">
+    @if (!studentService.hasIdentity()) {
+      <!-- Alias entry -->
+      <div class="text-center mb-8">
+        <div class="text-4xl mb-3">👋</div>
+        <h2 class="text-xl font-bold text-slate-800">¡Bienvenido!</h2>
+        <p class="text-slate-500 mt-1 text-sm">Escribe un alias para identificarte en clase</p>
+      </div>
+
+      <form (ngSubmit)="submitAlias()" class="space-y-4">
+        <div>
+          <label for="alias" class="block text-sm font-medium text-slate-700 mb-1">Tu alias</label>
+          <input
+            id="alias"
+            type="text"
+            [ngModel]="aliasInput()"
+            (ngModelChange)="aliasInput.set($event)"
+            name="alias"
+            maxlength="30"
+            autocomplete="nickname"
+            class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+            placeholder="Ej: JuanP, María, etc."
+          />
+        </div>
+
+        @if (aliasError()) {
+          <div class="bg-red-50 text-red-700 text-sm rounded-lg px-3 py-2">{{ aliasError() }}</div>
+        }
+
+        <button
+          type="submit"
+          class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl text-base transition-colors"
+        >
+          Continuar
+        </button>
+      </form>
+
+      <p class="text-center text-xs text-slate-400 mt-8">
+        <a routerLink="/login" class="hover:text-slate-600">Soy docente →</a>
+      </p>
+    } @else {
+      <!-- Student identified -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-sm text-slate-500">Hola,</p>
+          <p class="font-bold text-slate-800 text-lg">{{ studentService.alias() }}</p>
+        </div>
+        <button
+          (click)="changeAlias()"
+          class="text-sm text-blue-600 hover:text-blue-800"
+        >
+          Cambiar alias
+        </button>
+      </div>
+
+      <h2 class="font-semibold text-slate-700 mb-3">Ejercicios activos</h2>
+
+      @if (joinError()) {
+        <div class="bg-red-50 text-red-700 text-sm rounded-lg px-3 py-2 mb-3">{{ joinError() }}</div>
+      }
+
+      @if (activeExercises().length === 0) {
+        <div class="text-center py-12 text-slate-400">
+          <div class="text-3xl mb-2">📭</div>
+          <p>No hay ejercicios activos ahora mismo.</p>
+          <p class="text-xs mt-1">Espera a que el docente active uno.</p>
+        </div>
+      } @else {
+        <div class="space-y-3">
+          @for (ex of activeExercises(); track ex.id) {
+            <div class="bg-white rounded-xl border border-slate-200 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-slate-800">{{ ex.title }}</h3>
+                  @if (ex.description) {
+                    <p class="text-sm text-slate-500 mt-0.5">{{ ex.description }}</p>
+                  }
+                </div>
+                <button
+                  (click)="joinExercise(ex.id)"
+                  [disabled]="joining() === ex.id"
+                  class="shrink-0 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  @if (joining() === ex.id) {
+                    Uniendo…
+                  } @else {
+                    Unirse
+                  }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </main>
+</div>

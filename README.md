@@ -1,59 +1,80 @@
 # AulaFrontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.24.
+Frontend en **Angular 21** (standalone + Signals) con **Tailwind CSS v4** para la aplicación "Aula en Tiempo Real".
 
-## Development server
+## Requisitos
 
-To start a local development server, run:
+- Node.js 18+
+- Yarn 1.x
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Instalación
 
 ```bash
-ng generate component component-name
+yarn install
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Ejecución en desarrollo
+
+Primero inicia el backend (`../aula-backend`). Luego:
 
 ```bash
-ng generate --help
+yarn start
 ```
 
-## Building
+Abre `http://localhost:4200/`. El proxy de desarrollo (`proxy.conf.json`) reenvía `/api` y `/socket.io` a `http://localhost:3000`.
 
-To build the project run:
+## Build de producción
 
 ```bash
-ng build
+yarn build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Genera los artefactos en `dist/aula-frontend`.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Pruebas
 
 ```bash
-ng test
+yarn test
 ```
 
-## Running end-to-end tests
+Usa [Vitest](https://vitest.dev/).
 
-For end-to-end (e2e) testing, run:
+## Rutas
 
-```bash
-ng e2e
+| Ruta | Componente | Descripción |
+|---|---|---|
+| `/` | `StudentHomeComponent` | Alumno: alias y lista de ejercicios activos |
+| `/ejercicio/:id` | `StudentExerciseComponent` | Alumno: ejercicio y selector de estado |
+| `/login` | `LoginComponent` | Docente: inicio de sesión |
+| `/panel` | `TeacherPanelComponent` | Docente: panel de control (protegido por `authGuard`) |
+
+## Configuración
+
+`src/environments/environment.ts` y `environment.prod.ts`:
+
+| Campo | Descripción |
+|---|---|
+| `apiUrl` | Base de la API HTTP (`/api` en desarrollo, vía proxy) |
+| `socketUrl` | URL del servidor Socket.IO (`''` = mismo origen) |
+
+## Estructura
+
+```
+src/app/
+├── models/index.ts              # Interfaces TypeScript
+├── services/
+│   ├── auth.service.ts          # Login del docente y token
+│   ├── socket.service.ts        # Cliente Socket.IO
+│   └── student.service.ts       # Estado del alumno (Signals)
+├── guards/auth.guard.ts         # Protección del panel del docente
+└── pages/
+    ├── login/                   # Inicio de sesión del docente
+    ├── teacher-panel/           # Panel del docente
+    ├── student-home/            # Inicio del alumno
+    └── student-exercise/        # Ejercicio del alumno
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Notas
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- El token del docente se guarda en `localStorage`; la identidad del alumno (alias + token temporal) en `sessionStorage`.
+- La lógica de permisos reside en el backend; el frontend solo refleja el estado recibido por Socket.IO.

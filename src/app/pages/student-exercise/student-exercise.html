@@ -1,0 +1,143 @@
+<div class="min-h-screen bg-slate-50">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+      <button (click)="leave()" class="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
+        ← Volver
+      </button>
+      @if (socket.connected()) {
+        <span class="flex items-center gap-1.5 text-xs text-green-600">
+          <span class="w-2 h-2 rounded-full bg-green-500"></span>
+          Conectado
+        </span>
+      } @else {
+        <span class="flex items-center gap-1.5 text-xs text-red-500">
+          <span class="w-2 h-2 rounded-full bg-red-400"></span>
+          Sin conexión
+        </span>
+      }
+    </div>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-6">
+    @if (deactivatedMessage()) {
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 text-center">
+        <div class="text-2xl mb-2">⚠️</div>
+        <p class="text-amber-800 font-medium text-sm">{{ deactivatedMessage() }}</p>
+        <button
+          (click)="leave()"
+          class="mt-3 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded-lg"
+        >
+          Volver a ejercicios
+        </button>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-center">
+        <p class="text-red-700 text-sm">{{ errorMessage() }}</p>
+        <button
+          (click)="leave()"
+          class="mt-3 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg"
+        >
+          Volver
+        </button>
+      </div>
+    } @else if (exercise()) {
+      <!-- Exercise info -->
+      <div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+        <h2 class="text-lg font-bold text-slate-800">{{ exercise()!.title }}</h2>
+        @if (exercise()!.description) {
+          <p class="text-slate-600 text-sm mt-2">{{ exercise()!.description }}</p>
+        }
+        @if (exercise()!.instructions) {
+          <div class="mt-4 pt-4 border-t border-slate-100">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">Instrucciones</h3>
+            <p class="text-sm text-slate-600 whitespace-pre-line">{{ exercise()!.instructions }}</p>
+          </div>
+        }
+      </div>
+
+      <!-- Status selector -->
+      <h3 class="font-semibold text-slate-700 mb-3">Tu estado</h3>
+      <div class="space-y-3">
+        <button
+          (click)="setStatus('working')"
+          [disabled]="updating()"
+          class="w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left"
+          [class]="status() === 'working'
+            ? 'border-blue-500 bg-blue-50'
+            : 'border-slate-200 bg-white hover:border-blue-300'"
+        >
+          <span class="text-2xl">🔨</span>
+          <div>
+            <div class="font-semibold text-slate-800">Trabajando</div>
+            <div class="text-xs text-slate-500">Estoy realizando el ejercicio</div>
+          </div>
+          @if (status() === 'working') {
+            <span class="ml-auto text-blue-500 text-xl">✓</span>
+          }
+        </button>
+
+        <button
+          (click)="setStatus('finished')"
+          [disabled]="updating()"
+          class="w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left"
+          [class]="status() === 'finished'
+            ? 'border-green-500 bg-green-50'
+            : 'border-slate-200 bg-white hover:border-green-300'"
+        >
+          <span class="text-2xl">✅</span>
+          <div>
+            <div class="font-semibold text-slate-800">Terminado</div>
+            <div class="text-xs text-slate-500">He finalizado el ejercicio</div>
+          </div>
+          @if (status() === 'finished') {
+            <span class="ml-auto text-green-500 text-xl">✓</span>
+          }
+        </button>
+
+        <button
+          (click)="setStatus('need_help')"
+          [disabled]="updating()"
+          class="w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left"
+          [class]="status() === 'need_help'
+            ? 'border-amber-500 bg-amber-50'
+            : 'border-slate-200 bg-white hover:border-amber-300'"
+        >
+          <span class="text-2xl">🆘</span>
+          <div>
+            <div class="font-semibold text-slate-800">Necesito ayuda</div>
+            <div class="text-xs text-slate-500">Tengo problemas y necesito asistencia</div>
+          </div>
+          @if (status() === 'need_help') {
+            <span class="ml-auto text-amber-500 text-xl">✓</span>
+          }
+        </button>
+      </div>
+
+      <!-- Current status indicator -->
+      @if (status()) {
+        <div class="mt-6 text-center">
+          <p class="text-sm text-slate-500">Tu estado actual:</p>
+          <p class="font-bold text-lg mt-1">
+            @switch (status()) {
+              @case ('working') {
+                <span class="text-blue-600">🔨 Trabajando</span>
+              }
+              @case ('finished') {
+                <span class="text-green-600">✅ Terminado</span>
+              }
+              @case ('need_help') {
+                <span class="text-amber-600">🆘 Necesito ayuda</span>
+              }
+            }
+          </p>
+        </div>
+      }
+    } @else {
+      <div class="text-center py-16 text-slate-400">
+        <div class="text-3xl mb-2">⏳</div>
+        <p>Cargando ejercicio…</p>
+      </div>
+    }
+  </main>
+</div>
