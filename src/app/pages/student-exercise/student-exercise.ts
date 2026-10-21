@@ -20,8 +20,11 @@ export class StudentExerciseComponent implements OnInit, OnDestroy {
   errorMessage = signal('');
   deactivatedMessage = signal('');
   updating = signal(false);
+  showFinishConfirm = signal(false);
 
   exerciseId = this.route.snapshot.paramMap.get('id') ?? '';
+
+  isFinished = () => this.status() === 'finished';
 
   async ngOnInit() {
     if (!this.studentService.hasIdentity()) {
@@ -61,6 +64,24 @@ export class StudentExerciseComponent implements OnInit, OnDestroy {
   }
 
   async setStatus(newStatus: StudentStatus) {
+    if (this.updating() || this.isFinished()) return;
+    if (newStatus === 'finished') {
+      this.showFinishConfirm.set(true);
+      return;
+    }
+    await this.applyStatus(newStatus);
+  }
+
+  confirmFinish() {
+    this.showFinishConfirm.set(false);
+    this.applyStatus('finished');
+  }
+
+  cancelFinish() {
+    this.showFinishConfirm.set(false);
+  }
+
+  private async applyStatus(newStatus: StudentStatus) {
     if (this.updating()) return;
     this.updating.set(true);
     try {
